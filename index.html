@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>許哲誌SDGs BMI值計算器</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icon CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f4f8f3;
+        }
+
+        /* 斗笠貓咪水印背景 overlay */
+        .cat-bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.08;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 100 100"><polygon points="50,15 15,45 85,45" fill="%257851a9"/><circle cx="50" cy="65" r="25" fill="%25333333"/><ellipse cx="40" cy="60" rx="3" ry="4" fill="%25ffffff"/><ellipse cx="60" cy="60" rx="3" ry="4" fill="%25ffffff"/><polygon points="50,68 45,72 55,72" fill="%25ff9999"/></svg>');
+            background-repeat: repeat;
+            background-size: 180px 180px;
+        }
+
+        /* 高亮選中的 BMI 狀態表格行 */
+        .highlight-row {
+            background-color: #fef08a !important;
+            font-weight: 700;
+            transition: background-color 0.3s ease;
+        }
+
+        /* 水平飾條背景圖案 */
+        .banner-pattern {
+            background: linear-gradient(135deg, #70a83b 0%, #8bc34a 50%, #689f38 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen relative text-slate-800 flex flex-col justify-between">
+
+    <!-- 背景貓咪圖案 overlay -->
+    <div class="cat-bg-overlay"></div>
+
+    <div class="relative z-10 w-full max-w-4xl mx-auto my-4 sm:my-8 px-3 sm:px-6">
+
+        <!-- 頂部頁首 Banner (樣式參考醫療營養科設計) -->
+        <header class="banner-pattern rounded-t-xl p-4 sm:p-6 text-white shadow-md border-b-4 border-lime-700 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 rounded-full flex items-center justify-center text-2xl sm:text-3xl text-white shadow-inner">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl sm:text-4xl font-black tracking-wide drop-shadow-md">
+                        許哲誌SDGs BMI值計算器
+                    </h1>
+                    <p class="text-xs sm:text-sm text-lime-100 font-medium mt-1">
+                        <i class="fa-solid fa-seedling mr-1"></i>SDGs 目標 3：良好健康與福祉 (Good Health and Well-being)
+                    </p>
+                </div>
+            </div>
+
+            <!-- 右側斗笠貓吉祥物小卡 -->
+            <div class="flex items-center bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/20 space-x-3">
+                <!-- SVG 斗笠貓圖案展示 -->
+                <div class="relative w-12 h-12 flex-shrink-0">
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+                        <!-- 斗笠 -->
+                        <polygon points="50,10 10,42 90,42" fill="#d97706" stroke="#92400e" stroke-width="2"/>
+                        <line x1="50" y1="10" x2="50" y2="42" stroke="#b45309" stroke-width="1.5"/>
+                        <!-- 貓咪頭部 -->
+                        <ellipse cx="50" cy="62" rx="26" ry="24" fill="#f5f5f4"/>
+                        <!-- 耳朵 -->
+                        <polygon points="26,45 18,30 36,40" fill="#f5f5f4"/>
+                        <polygon points="74,45 82,30 64,40" fill="#f5f5f4"/>
+                        <!-- 眼睛 -->
+                        <ellipse cx="38" cy="58" rx="4" ry="5" fill="#1c1917"/>
+                        <ellipse cx="62" cy="58" rx="4" ry="5" fill="#1c1917"/>
+                        <!-- 鼻子 mouth -->
+                        <polygon points="50,65 47,69 53,69" fill="#f43f5e"/>
+                        <path d="M46 72 Q50 75 54 72" stroke="#1c1917" stroke-width="1.5" fill="none"/>
+                    </svg>
+                </div>
+                <div class="text-xs text-lime-50 leading-tight">
+                    <span class="font-bold block text-white text-sm">永續健康貓貓</span>
+                    關心您的 BMI 數值
+                </div>
+            </div>
+        </header>
+
+        <!-- 主體內容區塊 -->
+        <main class="bg-white rounded-b-xl p-5 sm:p-10 shadow-xl border border-slate-200 space-y-8">
+
+            <!-- 1. BMI 計算公式說明與範例 -->
+            <section class="text-center space-y-3 pb-6 border-b border-dashed border-slate-300">
+                <h2 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-calculator text-lime-600"></i> BMI值計算公式
+                </h2>
+                <div class="inline-block bg-slate-100 text-slate-800 px-4 py-2 rounded-lg font-mono font-bold text-base sm:text-lg border border-slate-300">
+                    BMI = 體重(公斤) / 身高²(公尺²)
+                </div>
+
+                <p class="text-slate-600 text-sm sm:text-base">
+                    例如：一個 <span class="font-bold text-slate-900">52</span> 公斤的人，身高是 <span class="font-bold text-slate-900">155</span> 公分，則 BMI 為：
+                </p>
+
+                <p class="text-blue-700 font-bold font-mono text-base sm:text-lg">
+                    52(公斤) / 1.55² (公尺²) = 21.6
+                </p>
+
+                <div class="inline-block bg-orange-100 text-orange-700 px-4 py-1.5 rounded-full font-bold text-sm sm:text-base border border-orange-300">
+                    體重正常範圍為 BMI = 18.5 ～ 24
+                </div>
+            </section>
+
+            <!-- 2. 輸入與計算表單 -->
+            <section class="max-w-md mx-auto bg-emerald-50/60 p-6 rounded-2xl border border-emerald-200/80 shadow-sm space-y-5">
+                <h3 class="text-center font-bold text-purple-800 text-base sm:text-lg">
+                    快看看自己的BMI是否在理想範圍吧！
+                </h3>
+
+                <div class="space-y-4">
+                    <!-- 身高輸入 -->
+                    <div class="flex items-center justify-center space-x-3">
+                        <label for="height" class="w-16 text-right font-bold text-slate-700">身 高：</label>
+                        <input type="number" id="height" min="50" max="250" placeholder="例如 165" class="w-40 sm:w-48 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-lime-500 bg-white font-mono text-base">
+                        <span class="w-8 font-bold text-slate-600">cm</span>
+                    </div>
+
+                    <!-- 體重輸入 -->
+                    <div class="flex items-center justify-center space-x-3">
+                        <label for="weight" class="w-16 text-right font-bold text-slate-700">體 重：</label>
+                        <input type="number" id="weight" min="10" max="300" placeholder="例如 55" class="w-40 sm:w-48 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-lime-500 bg-white font-mono text-base">
+                        <span class="w-8 font-bold text-slate-600">kg</span>
+                    </div>
+                </div>
+
+                <!-- 按鈕區 -->
+                <div class="flex justify-center space-x-4 pt-2">
+                    <button id="btn-calc" onclick="calculateBMI()" class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-2 px-5 rounded-lg shadow transition active:scale-95 flex items-center gap-1.5">
+                        <i class="fa-solid fa-play text-xs"></i> 開始計算
+                    </button>
+                    <button id="btn-reset" onclick="resetForm()" class="bg-slate-300 hover:bg-slate-400 text-slate-700 font-bold py-2 px-5 rounded-lg shadow transition active:scale-95 flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-left text-xs"></i> 清除重算
+                    </button>
+                </div>
+
+                <!-- 計算結果顯示框 -->
+                <div class="text-center pt-3 border-t border-emerald-200">
+                    <span class="block text-slate-700 font-bold mb-2">你的BMI為</span>
+                    <div id="result-box" class="w-full max-w-xs mx-auto py-2.5 px-4 bg-teal-50 border-2 border-teal-400 rounded-lg text-teal-900 font-mono text-2xl font-black shadow-inner min-h-[52px] flex items-center justify-center">
+                        --
+                    </div>
+                    <p id="result-status" class="mt-2 text-sm font-bold text-slate-600 min-h-[20px]"></p>
+                </div>
+            </section>
+
+            <!-- 3. BMI 標準對照表 -->
+            <section class="space-y-4">
+                <h3 class="text-center font-bold text-slate-800 text-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-table-list text-lime-600"></i> 身體質量指數 (BMI) 標準對照表
+                </h3>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-slate-400 text-center text-sm sm:text-base">
+                        <thead>
+                            <tr class="bg-amber-200 text-amber-950 font-bold">
+                                <th class="border border-slate-400 p-2.5 sm:p-3 w-1/4">分類</th>
+                                <th class="border border-slate-400 p-2.5 sm:p-3 w-2/4">身體質量指數(BMI)<br><span class="text-xs font-normal">(kg/m²)</span></th>
+                                <th class="border border-slate-400 p-2.5 sm:p-3 w-1/4">腰圍<br><span class="text-xs font-normal">(cm)</span></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-300">
+                            <!-- 體重過輕 -->
+                            <tr id="row-underweight" class="bg-cyan-50/50 hover:bg-cyan-100/50 transition">
+                                <td class="border border-slate-400 font-bold p-2.5">體重過輕</td>
+                                <td class="border border-slate-400 font-mono p-2.5">BMI &lt; 18.5</td>
+                                <td class="border border-slate-400 p-2.5">-</td>
+                            </tr>
+                            <!-- 正常範圍 -->
+                            <tr id="row-normal" class="bg-emerald-50/50 hover:bg-emerald-100/50 transition">
+                                <td class="border border-slate-400 font-bold p-2.5">正常範圍</td>
+                                <td class="border border-slate-400 font-mono p-2.5">18.5 ≦ BMI &lt; 24</td>
+                                <td class="border border-slate-400 p-2.5">-</td>
+                            </tr>
+                            <!-- 異常範圍 - 過重 -->
+                            <tr id="row-overweight" class="bg-cyan-50/50 hover:bg-cyan-100/50 transition">
+                                <td id="abnormal-cell" rowspan="4" class="border border-slate-400 font-bold p-2.5 bg-cyan-100/80 text-cyan-950 align-middle">
+                                    異常範圍
+                                </td>
+                                <td class="border border-slate-400 p-2.5">
+                                    過重：<span class="font-mono">24 ≦ BMI &lt; 27</span>
+                                </td>
+                                <td id="waist-cell" rowspan="4" class="border border-slate-400 p-2.5 align-middle text-left sm:text-center text-xs sm:text-sm">
+                                    男性：≧ 90 公分<br>
+                                    女性：≧ 80 公分
+                                </td>
+                            </tr>
+                            <!-- 輕度肥胖 -->
+                            <tr id="row-obese1" class="bg-cyan-50/50 hover:bg-cyan-100/50 transition">
+                                <td class="border border-slate-400 p-2.5">
+                                    輕度肥胖：<span class="font-mono">27 ≦ BMI &lt; 30</span>
+                                </td>
+                            </tr>
+                            <!-- 中度肥胖 -->
+                            <tr id="row-obese2" class="bg-cyan-50/50 hover:bg-cyan-100/50 transition">
+                                <td class="border border-slate-400 p-2.5">
+                                    中度肥胖：<span class="font-mono">30 ≦ BMI &lt; 35</span>
+                                </td>
+                            </tr>
+                            <!-- 重度肥胖 -->
+                            <tr id="row-obese3" class="bg-cyan-50/50 hover:bg-cyan-100/50 transition">
+                                <td class="border border-slate-400 p-2.5">
+                                    重度肥胖：<span class="font-mono">BMI ≧ 35</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <!-- 頁尾 -->
+        <footer class="text-center py-4 text-xs sm:text-sm text-slate-500 flex flex-col sm:flex-row items-center justify-between px-2 gap-2">
+            <div>
+                &copy; 許哲誌SDGs 不塑永續與健康推廣團隊版權所有
+            </div>
+            <a href="#top" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="font-bold text-lime-700 hover:text-lime-800 flex items-center gap-1">
+                TOP ▲
+            </a>
+        </footer>
+    </div>
+
+    <!-- JS 計算與對照 logic -->
+    <script>
+        function clearHighlights() {
+            const rows = ['row-underweight', 'row-normal', 'row-overweight', 'row-obese1', 'row-obese2', 'row-obese3'];
+            rows.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('highlight-row');
+            });
+        }
+
+        function calculateBMI() {
+            const heightInput = document.getElementById('height').value;
+            const weightInput = document.getElementById('weight').value;
+            const resultBox = document.getElementById('result-box');
+            const resultStatus = document.getElementById('result-status');
+
+            clearHighlights();
+
+            const height = parseFloat(heightInput);
+            const weight = parseFloat(weightInput);
+
+            if (isNaN(height) || isNaN(weight) || height <= 0 || weight <= 0) {
+                resultBox.innerText = '請輸入有效數值';
+                resultBox.className = "w-full max-w-xs mx-auto py-2.5 px-4 bg-rose-50 border-2 border-rose-400 rounded-lg text-rose-700 font-bold text-base shadow-inner flex items-center justify-center min-h-[52px]";
+                resultStatus.innerText = '';
+                return;
+            }
+
+            // BMI = 體重(kg) / (身高(m))^2
+            const heightM = height / 100;
+            const bmi = weight / (heightM * heightM);
+            const bmiRounded = bmi.toFixed(1);
+
+            resultBox.innerText = bmiRounded;
+            resultBox.className = "w-full max-w-xs mx-auto py-2.5 px-4 bg-amber-100 border-2 border-amber-500 rounded-lg text-amber-950 font-mono text-3xl font-black shadow-inner flex items-center justify-center min-h-[52px]";
+
+            let category = '';
+            let targetRowId = '';
+            let statusColorClass = '';
+
+            if (bmi < 18.5) {
+                category = '體重過輕';
+                targetRowId = 'row-underweight';
+                statusColorClass = 'text-sky-700';
+            } else if (bmi < 24) {
+                category = '正常範圍';
+                targetRowId = 'row-normal';
+                statusColorClass = 'text-emerald-700';
+            } else if (bmi < 27) {
+                category = '異常範圍：過重';
+                targetRowId = 'row-overweight';
+                statusColorClass = 'text-amber-700';
+            } else if (bmi < 30) {
+                category = '異常範圍：輕度肥胖';
+                targetRowId = 'row-obese1';
+                statusColorClass = 'text-orange-700';
+            } else if (bmi < 35) {
+                category = '異常範圍：中度肥胖';
+                targetRowId = 'row-obese2';
+                statusColorClass = 'text-rose-700';
+            } else {
+                category = '異常範圍：重度肥胖';
+                targetRowId = 'row-obese3';
+                statusColorClass = 'text-red-800';
+            }
+
+            resultStatus.innerHTML = `<span class="${statusColorClass}">您的狀態：${category}</span>`;
+
+            if (targetRowId) {
+                const row = document.getElementById(targetRowId);
+                if (row) {
+                    row.classList.add('highlight-row');
+                }
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('height').value = '';
+            document.getElementById('weight').value = '';
+            const resultBox = document.getElementById('result-box');
+            resultBox.innerText = '--';
+            resultBox.className = "w-full max-w-xs mx-auto py-2.5 px-4 bg-teal-50 border-2 border-teal-400 rounded-lg text-teal-900 font-mono text-2xl font-black shadow-inner flex items-center justify-center min-h-[52px]";
+            document.getElementById('result-status').innerText = '';
+            clearHighlights();
+        }
+
+        // 支援 Enter 鍵快速觸發計算
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculateBMI();
+            }
+        });
+    </script>
+</body>
+</html>
